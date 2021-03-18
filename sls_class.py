@@ -100,6 +100,9 @@ class sls:
             
         self.opt_coefs = opt_coefs
         
+    def get_num_segments(self):
+        return len(self.opt_coefs)
+        
     def get_fit(self,x):
         #get fit using coefs
         n = len(x)

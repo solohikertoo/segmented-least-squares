@@ -1,3 +1,6 @@
+## DEPRECATED ##
+## USE slc_class.py INSTEAD ##
+
 # -*- coding: utf-8 -*-
 
 #least squares solution of one line segment

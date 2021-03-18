@@ -1,3 +1,6 @@
+## DEPRECATED ##
+## USE testsls.py INSTEAD ##
+
 # -*- coding: utf-8 -*-
 
 import math

@@ -16,7 +16,7 @@ s = sls('testdata.txt')
 # find the least squares segment coefficients
 # if no parameters input, defaults to desired_penalty of 0.35
 # to limit the number of segments, set max_num_seg (desired_penalty ignored)
-# to set a desired_penalty, do not input max_num_seg to set it to None
+# to set a desired_penalty (runs faster), do not input max_num_seg to set it to None
 penalty, num_segments = s.find_segments()
 print("penalty = {0}, num segments = {1}".format(penalty, num_segments))
 

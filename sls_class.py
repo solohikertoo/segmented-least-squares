@@ -31,7 +31,7 @@ class sls:
             
         x = data[:,0]      #data
         y = data[:,1]
-        v = np.std(y)**2   #variance of y for caculatin penalty
+        v = np.std(y)**2   #variance of y for caculating penalty
         n = len(x)
         err_arr = np.zeros((n,n))
         a_arr = np.zeros((n,n))
@@ -77,9 +77,17 @@ class sls:
     def find_segments(self, max_num_seg=None, desired_penalty=0.35, 
                       penalty_start=0.05, penalty_inc=0.05):
         """
-        if desired penalty, call find_opt directly, otherwise
-        loop over penalty values to find solution that has less 
-        than maximum number of segments
+        Find the segments and least squares segment coefficients.
+        If desired_penalty is used, find_opt() is called directly (so is faster), 
+        otherwise there is a loop over penalty values to find solution that has less 
+        than maximum number of segments.
+        
+        If no parameters input, defaults to desired_penalty of 0.35.
+        To set a desired_penalty, do not input max_num_seg to set max_num_seg to None.
+        To limit the number of segments, set max_num_seg (desired_penalty ignored),
+        and to control the search for the penalty to get the number of segments,
+        set penalty_start and penalty_inc. These may depend on the data.
+
         Inputs
         max_num_seg - set if a limit to the number of segments is desired
         desired_penalty - penalty term to add to error in optimization to all
@@ -92,16 +100,23 @@ class sls:
         number of segments used
         """
         if max_num_seg is not None:
+            # setting max_num_seg, ignore desired_penalty and check other parameters
             desired_penalty = None
             assert max_num_seg >= 1, 'max_num_seg must be at least 1'
-        assert not (max_num_seg is None and desired_penalty is None), \
-               'max_num_seg and desired_penalty cannot both be None'
+            assert penalty_start is not None and penalty_start > 0, 'penalty_start must not None, > 0'
+            assert penalty_inc is not None and penalty_inc > 0, 'penalty_inc must be not None, > 0'
+        else:
+            # using desired_penalty, check it
+            assert desired_penalty is not None and desired_penalty > 0, 'desired_penalty must be not None, > 0'
                
         if desired_penalty:
+            # call find_opt directly
             penalty = desired_penalty
             self.find_opt(penalty_factor=penalty)
             num_seg = self.get_num_segments()
         else:
+            # loop over penalties to find one that gives number of segments
+            # less than max_num_seg
             penalty = penalty_start - penalty_inc
             num_seg = np.inf
             while num_seg > max_num_seg:

@@ -9,10 +9,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class sls:
+    """
+    find best least squares fit of multiple segments to the input data
+    """
     def __init__(self, filename):
-        self.get_data(filename)
+        """
+        Inputs:
+        filename - text file of pairs of x-y points, one pair per row, 
+                   separated by a space
+        """
+        self.get_data(filename)        
         
     def get_data(self, filename):
+        """
+        read the data and find the least squares coefficients and errors
+        for all possible pairs of start and end points
+        """
         with open(filename) as csvfile:
             r = csv.reader(csvfile, delimiter = ' ')
             data = np.array([[float(row[0]), float(row[1])] for row in r])
@@ -45,6 +57,9 @@ class sls:
         self.v = v
 
     def lscoef(self, x, y):
+        """
+        least squares fit
+        """
         n=len(x)
         if (n == 1):
             return (0.0, y[0], 0.0)
@@ -59,7 +74,46 @@ class sls:
 
         return (a, b, e2)
         
+    def find_segments(self, max_num_seg=None, desired_penalty=0.35, 
+                      penalty_start=0.05, penalty_inc=0.05):
+        """
+        if desired penalty, call find_opt directly, otherwise
+        loop over penalty values to find solution that has less 
+        than maximum number of segments
+        Inputs
+        max_num_seg - set if a limit to the number of segments is desired
+        desired_penalty - penalty term to add to error in optimization to all
+                           for noise
+        penalty_start, penalty_inc - parameter for searching for penalty 
+                                     term in case of limiting the number of 
+                                     segments
+        Returns
+        penalty value used
+        number of segments used
+        """
+        if max_num_seg is not None:
+            desired_penalty = None
+            assert max_num_seg >= 1, 'max_num_seg must be at least 1'
+        assert not (max_num_seg is None and desired_penalty is None), \
+               'max_num_seg and desired_penalty cannot both be None'
+               
+        if desired_penalty:
+            penalty = desired_penalty
+            self.find_opt(penalty_factor=penalty)
+            num_seg = self.get_num_segments()
+        else:
+            penalty = penalty_start - penalty_inc
+            num_seg = np.inf
+            while num_seg > max_num_seg:
+                penalty += penalty_inc
+                self.find_opt(penalty_factor=penalty)
+                num_seg = self.get_num_segments()
+        return penalty, num_seg
+        
     def find_opt(self, penalty_factor):
+        """
+        dynamic programming segmented least squares
+        """
         penalty = self.v * penalty_factor
         n = self.err_arr.shape[0]
         
